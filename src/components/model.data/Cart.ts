@@ -22,7 +22,7 @@ export class Cart {
   getSubtotal() : number {
     let proxiAmount:number = 0;
     for (let i=0;i<this.products.length;i++) {
-      proxiAmount += this.products[i].unitPrice ?? 0;
+      proxiAmount += this.products[i].price ?? 0;
     }
     return proxiAmount;
   }

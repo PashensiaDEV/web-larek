@@ -8,7 +8,7 @@ export class Catalog {
 		this.products = list;
 	}
 
-	getproduct(): IProduct[] {
+	getProduct(): IProduct[] {
 		return this.products;
 	}
 

@@ -7,7 +7,7 @@ export interface IApi {
 
 
 export interface ICustomer {
-  payment: string;
+  payment: PaymentMethod ;
   address: string;
   email: string;
   phone: string;
@@ -25,8 +25,11 @@ export interface IProduct {
   title: string;
   image: string;
   category: string;
-  unitPrice: number|null;
-  description: string;
+  price: number|null;
+  description?: string;
 }
 
-export type PaymentMethod = "card" | "cash"
+export enum PaymentMethod {
+  Card = "card",
+  Cash = "cash",
+}
