@@ -1,6 +1,6 @@
-export type ApiListResponse<Type> = {
+export type ApiListResponse<T> = {
     total: number,
-    items: Type[]
+    items: T[]
 };
 
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';

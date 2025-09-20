@@ -14,6 +14,8 @@
   padding-bottom: 5vh;
   box-sizing: border-box;
 
+  
+
   &_active {
     display: flex;
   }
@@ -27,7 +29,12 @@
     border-radius: 3rem;
     box-sizing: border-box;
     position: relative;
+
+     &:has(.basket) {
+      margin: 200px 0 auto 0;
+     }
   }
+  
 
   &__content {
     flex-grow: 1;
