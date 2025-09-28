@@ -46,6 +46,12 @@
     font-weight: 400;
   }
 
+  &__text {
+    margin: 0;
+    opacity: 0.5;
+    font-weight: 200
+  }
+
   &__actions {
     @include mixins.flex(row);
     align-items: center;

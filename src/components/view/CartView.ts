@@ -8,6 +8,7 @@ export class CartView {
 	protected listEl: HTMLElement;
 	protected totalEl: HTMLElement;
 	protected orderBtn: HTMLButtonElement;
+	protected CartIsEmpty: HTMLSpanElement;
 
 	constructor(
 		private tpl: HTMLTemplateElement,
@@ -19,6 +20,9 @@ export class CartView {
 		this.root = cloneTemplate<HTMLElement>(this.tpl);
 		this.listEl = ensureElement<HTMLElement>('.basket__list', this.root);
 		this.totalEl = ensureElement<HTMLElement>('.basket__price', this.root);
+		this.CartIsEmpty = ensureElement<HTMLElement>('.modal__text', this.root);
+		this.CartIsEmpty.textContent = 'Корзина пуста';
+
 		this.orderBtn = ensureElement<HTMLButtonElement>(
 			'.basket__button',
 			this.root
@@ -26,6 +30,9 @@ export class CartView {
 
 		const rows = items.map((p, idx) => {
 			const li = cloneTemplate<HTMLLIElement>(this.itemTpl);
+			if (!items ) {this.CartIsEmpty.textContent = 'Корзина пуста' } else {
+				this.CartIsEmpty.textContent = ''
+			}
 			ensureElement<HTMLElement>('.basket__item-index', li).textContent =
 				String(idx + 1);
 			ensureElement<HTMLElement>('.card__title', li).textContent = p.title;
