@@ -10,9 +10,13 @@ export class Catalog {
 	}
 
 	// получить все товары 
-	getProduct(): IProduct[] {
+	getProducts(): IProduct[] {
 		return this.products;
 	}
+	//Получаем товар по индексу
+	getProduct(id: string): IProduct {
+    return this.products.find(p => p.id === id);
+  }
 
 	// выбрать один товар 
 	selectProduct(id: string): void {

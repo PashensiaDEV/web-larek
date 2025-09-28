@@ -21,18 +21,21 @@ export type OrderResponse = {
   total?: number;
 };
 
-export class apiInterpretator {
-  constructor(private api: Api) {}
+export class apiInterpretator extends Api {
+  constructor(baseUrl: string, options?: RequestInit) {
+    super(baseUrl, options);
+  }
 
+  // Грузим все продукты
   async loadProducts(): Promise<IProduct[]> {
-    const res = await this.api.get('/product/');
+    const res = await this.get('/product/');
     const data = res as unknown as ProductListResponse;
     return Array.isArray(data.items) ? data.items : [];
   }
 
-  
+  // постим заказ 
   async createOrder(payload: OrderPayload): Promise<OrderResponse> {
-    const res = await this.api.post('/order', payload); 
+    const res = await this.post('/order', payload); 
     return res as unknown as OrderResponse;            
   }
 }

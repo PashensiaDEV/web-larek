@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { DefinePlugin } = require('webpack');
 const TerserPlugin = require("terser-webpack-plugin");
+const dotenv = require('dotenv');
 
 require('dotenv').config({
   path: path.join(process.cwd(), process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env')
@@ -12,7 +13,16 @@ require('dotenv').config({
 
 const isProduction = process.env.NODE_ENV == "production";
 
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
 const stylesHandler = MiniCssExtractPlugin.loader;
+
+if (process.env.NODE_ENV) {
+  dotenv.config({
+    path: path.join(process.cwd(), `.env.${process.env.NODE_ENV}`),
+    override: true
+  });
+}
 
 const config = {
   entry: "./src/index.ts",
@@ -36,9 +46,13 @@ const config = {
     // Add your plugins here
     // Learn more about plugins from https://webpack.js.org/configuration/plugins/
     new DefinePlugin({
-      'process.env.DEVELOPMENT': !isProduction,
-      'process.env.API_ORIGIN': JSON.stringify(process.env.API_ORIGIN ?? '')
-    })
+  'process.env.DEVELOPMENT': JSON.stringify(!isProduction),
+  'process.env.API_ORIGIN': JSON.stringify(
+    isProduction
+      ? (process.env.API_ORIGIN || 'https://larek-api.nomoreparties.co')
+      : (process.env.API_ORIGIN || '')
+  ),
+})
   ],
   module: {
     rules: [
