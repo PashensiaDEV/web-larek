@@ -1,51 +1,67 @@
-import { ICustomer, PaymentMethod, CustomerValidation } from "../../types";
+// components/model.data/Customer.ts
+import { ICustomer, PaymentMethod, CustomerValidation } from '../../types';
+import { IEvents } from '../base/events';
 
 export class Customer {
-  private data: ICustomer;
+	private data: ICustomer;
 
-  constructor (initialData?: Partial<ICustomer>) {
-    this.data = {
-      payment: initialData?.payment ?? PaymentMethod.Cash,
-      address: initialData?.address ?? "",
-      email: initialData?.email ?? "",
-      phone: initialData?.phone ?? "",
-    };
-  }
+	constructor(private events: IEvents, initialData?: Partial<ICustomer>) {
+		this.data = {
+			payment: initialData?.payment ?? PaymentMethod.Cash,
+			address: initialData?.address ?? '',
+			email: initialData?.email ?? '',
+			phone: initialData?.phone ?? '',
+		};
+		this.emitValidate();
+	}
 
-  saveData(patch: Partial <ICustomer>): void {
-    if (patch.payment !== undefined) {
-      if (!Object.values(PaymentMethod).includes(patch.payment)) {
-        throw new Error(`Invalid payment method: ${patch.payment}`);
-      }
-    }
-    this.data = { ...this.data, ...patch };
-  }
+	setData<K extends keyof ICustomer>(key: K, value: ICustomer[K]): void {
+		if (
+			key === 'payment' &&
+			!Object.values(PaymentMethod).includes(value as PaymentMethod)
+		) {
+			throw new Error(`Invalid payment method: ${String(value)}`);
+		}
+		this.data = { ...this.data, [key]: value } as ICustomer;
+		this.emitValidate();
+	}
 
-  getData():ICustomer {
-    return {...this.data};
-  }
+	saveData(patch: Partial<ICustomer>): void {
+		if (
+			patch.payment !== undefined &&
+			!Object.values(PaymentMethod).includes(patch.payment)
+		) {
+			throw new Error(`Invalid payment method: ${patch.payment}`);
+		}
+		this.data = { ...this.data, ...patch };
+		this.emitValidate();
+	}
 
-  validateData():CustomerValidation {
-    let temporaryData:CustomerValidation;
+	getData(): ICustomer {
+		return { ...this.data };
+	}
 
-    if (!this.data.address) {
-      temporaryData.address = "Введите корректный адрес.";
-    }
+	validateData(): CustomerValidation {
+		const errors: CustomerValidation = {
+			payment: undefined,
+			address: undefined,
+			email: undefined,
+			phone: undefined,
+		};
 
-    if (!this.data.email) {
-      temporaryData.email = "Введите корректный e-mail.";
-    }
+		if (!this.data.address?.trim())
+			errors.address = 'Введите корректный адрес.';
+		if (!this.data.email?.trim()) errors.email = 'Введите корректный e-mail.';
+		if (!this.data.phone?.trim()) errors.phone = 'Введите корректный телефон.';
+		if (!Object.values(PaymentMethod).includes(this.data.payment)) {
+			errors.payment = 'Неизвестный способ оплаты.';
+		}
 
-     if (!this.data.phone) {
-      temporaryData.phone = "Введите корректный телефон.";
-    }
+		return errors;
+	}
 
-    if (!Object.values(PaymentMethod).includes(this.data.payment)) {
-      temporaryData.payment = "Неизвестный способ оплаты.";
-    }
-
-    return temporaryData;
-
-
-  }
+	private emitValidate(): void {
+		const errors = this.validateData();
+		this.events.emit('form:validate', errors);
+	}
 }

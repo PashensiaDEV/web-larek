@@ -37,8 +37,7 @@ export class ProductModalView {
 		);
 		const priceEl = ensureElement<HTMLElement>('.card__price', this.root);
 
-		const categoryLabel =
-			(item as any).category ?? '';
+		const categoryLabel = (item as any).category ?? '';
 		categoryEl.textContent = categoryLabel;
 		this.applyCategoryClass(categoryEl, categoryLabel);
 
@@ -89,10 +88,10 @@ export class ProductModalView {
 
 		const map: Record<string, string> = {
 			'софт-скил': 'card__category_soft',
-			'другое': 'card__category_other',
+			другое: 'card__category_other',
 			'хард-скил': 'card__category_hard',
-			'дополнительное': 'card__category_additional',
-			'кнопка': 'card__category_button',
+			дополнительное: 'card__category_additional',
+			кнопка: 'card__category_button',
 		};
 		if (category && map[category]) el.classList.add(map[category]);
 	}

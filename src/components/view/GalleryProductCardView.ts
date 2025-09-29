@@ -11,40 +11,59 @@ import { IEvents } from '../base/events';
 
 export class GalleryProductCardView {
 	private root: HTMLElement;
+	private categoryEl: HTMLElement;
+	private titleEl: HTMLElement;
+	private imgEl: HTMLImageElement;
+	private priceEl: HTMLElement;
+
+	private product?: IProduct;
 
 	constructor(template: HTMLTemplateElement | string, private events: IEvents) {
 		this.root = cloneTemplate<HTMLElement>(template);
+
+		this.categoryEl = ensureElement<HTMLElement>('.card__category', this.root);
+		this.titleEl = ensureElement<HTMLElement>('.card__title', this.root);
+		this.imgEl = ensureElement<HTMLImageElement>('.card__image', this.root);
+		this.priceEl = ensureElement<HTMLElement>('.card__price', this.root);
+
+		// Клик  один раз эмитим выбранный товар
+		this.root.addEventListener('click', (e) => {
+			e.preventDefault();
+			if (this.product) {
+				this.events.emit('card:select', { item: this.product });
+			}
+		});
 	}
 
-	render(item: IProduct): HTMLElement {
-		const categoryEl = ensureElement<HTMLElement>('.card__category', this.root);
-		const titleEl = ensureElement<HTMLElement>('.card__title', this.root);
-		const imgEl = ensureElement<HTMLImageElement>('.card__image', this.root);
-		const priceEl = ensureElement<HTMLElement>('.card__price', this.root);
+	setProduct(item: IProduct): void {
+		this.product = item;
+
+		// dataset id
+		setElementData(this.root, { id: item.id });
 
 		// Категория
 		const categoryLabel =
 			(item as any).category ?? (item as any).categoryLabel ?? '';
-		categoryEl.textContent = categoryLabel;
-		this.applyCategoryClass(categoryEl, categoryLabel);
+		this.categoryEl.textContent = categoryLabel;
+		this.applyCategoryClass(this.categoryEl, categoryLabel);
 
-		// Текст и картинка
-		titleEl.textContent = item.title;
+		// Заголовок
+		this.titleEl.textContent = item.title;
+
+		// Картинка
 		if ((item as any).image) {
-			imgEl.src = CDN_URL + (item as any).image;
-			imgEl.alt = item.title;
+			this.imgEl.src = CDN_URL + (item as any).image;
+			this.imgEl.alt = item.title;
+		} else {
+			this.imgEl.removeAttribute('src');
+			this.imgEl.alt = '';
 		}
 
-		// Цена null "бесценно"
-		priceEl.textContent = this.formatPrice((item as any).price);
+		// Цена
+		this.priceEl.textContent = this.formatPrice((item as any).price);
+	}
 
-		// dataset
-		setElementData(this.root, { id: item.id });
-		(this.root as HTMLButtonElement).addEventListener('click', (e) => {
-			e.preventDefault();
-			this.events.emit('card:select', { item });
-		});
-
+	render(): HTMLElement {
 		return this.root;
 	}
 

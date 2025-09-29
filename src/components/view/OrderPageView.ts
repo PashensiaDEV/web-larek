@@ -1,9 +1,8 @@
+// components/view/OrderFormView.ts
 import { ensureElement, cloneTemplate } from '../../utils/utils';
 import { IEvents } from '../base/events';
-import { Customer } from '../model.data/Customer';
-import { CustomerValidation, PaymentMethod } from '../../types';
+import { CustomerValidation, ICustomer, PaymentMethod } from '../../types';
 
-// класс представления формы заказа
 export class OrderFormView {
 	private root: HTMLElement;
 	private form: HTMLFormElement;
@@ -13,15 +12,9 @@ export class OrderFormView {
 	private submitBtn: HTMLButtonElement;
 	private errorsEl: HTMLElement;
 
-	constructor(
-		template: HTMLTemplateElement | string,
-		private events: IEvents,
-		private customer: Customer
-	) {
+	constructor(template: HTMLTemplateElement | string, private events: IEvents) {
 		this.root = cloneTemplate<HTMLElement>(template);
-		const maybeForm = this.root as HTMLFormElement;
-
-		this.form = maybeForm;
+		this.form = this.root as HTMLFormElement;
 
 		this.btnCard = ensureElement<HTMLButtonElement>(
 			'button[name="card"]',
@@ -42,48 +35,60 @@ export class OrderFormView {
 		this.errorsEl = ensureElement<HTMLElement>('.form__errors', this.root);
 
 		this.attachEvents();
-		this.hydrateFromModel();
-		this.updateUI();
 	}
 
 	render(): HTMLElement {
 		return this.root;
 	}
 
+	setValues(data: Partial<ICustomer>): void {
+		if (typeof data.address === 'string') {
+			this.addressInput.value = data.address;
+		}
+		this.syncPaymentButtons(data.payment);
+	}
 
-	private attachEvents() {
+	// Валидация из модели!
+	validate(errors: CustomerValidation): void {
+		const valid = !errors.payment && !errors.address;
+		this.submitBtn.disabled = !valid;
+		this.errorsEl.textContent = valid
+			? ''
+			: [errors.payment, errors.address].filter(Boolean).join(' ');
+	}
+
+	// слушатели на ружу
+	private attachEvents(): void {
 		this.btnCard.addEventListener('click', () => {
-			this.customer.saveData({ payment: PaymentMethod.Card });
-			this.updateUI();
+			this.syncPaymentButtons(PaymentMethod.Card);
+			this.events.emit('order:change', {
+				key: 'payment',
+				value: PaymentMethod.Card,
+			});
 		});
 
 		this.btnCash.addEventListener('click', () => {
-			this.customer.saveData({ payment: PaymentMethod.Cash });
-			this.updateUI();
+			this.syncPaymentButtons(PaymentMethod.Cash);
+			this.events.emit('order:change', {
+				key: 'payment',
+				value: PaymentMethod.Cash,
+			});
 		});
 
 		this.addressInput.addEventListener('input', () => {
-			this.customer.saveData({ address: this.addressInput.value.trim() });
-			this.updateUI();
+			this.events.emit('order:change', {
+				key: 'address',
+				value: this.addressInput.value.trim(),
+			});
 		});
 
 		this.form.addEventListener('submit', (e) => {
 			e.preventDefault();
-			const { valid } = this.validateStep();
-			if (!valid) return;
-			this.events.emit('order:step1:submit', {
-				customer: this.customer.getData(),
-			});
+			this.events.emit('order:step1:submit');
 		});
 	}
 
-	private hydrateFromModel() {
-		const data = this.customer.getData();
-		this.addressInput.value = data.address ?? '';
-		this.syncPaymentButtons(data.payment);
-	}
-
-	private syncPaymentButtons(payment: PaymentMethod | string | undefined) {
+	private syncPaymentButtons(payment?: PaymentMethod | string): void {
 		const isCard = payment === PaymentMethod.Card || payment === 'card';
 		const isCash = payment === PaymentMethod.Cash || payment === 'cash';
 
@@ -92,40 +97,5 @@ export class OrderFormView {
 
 		this.btnCard.setAttribute('aria-pressed', String(!!isCard));
 		this.btnCash.setAttribute('aria-pressed', String(!!isCash));
-	}
-
-	private validateStep(): { valid: boolean; errors: CustomerValidation } {
-		const data = this.customer.getData();
-		const errors: CustomerValidation = {
-			payment: undefined,
-			address: undefined,
-			email: undefined,
-			phone: undefined,
-		};
-
-		if (
-			data.payment !== PaymentMethod.Card &&
-			data.payment !== PaymentMethod.Cash
-		) {
-			errors.payment = 'Выберите способ оплаты.';
-		}
-		if (!data.address || !data.address.trim()) {
-			errors.address = 'Введите адрес доставки.';
-		}
-
-		const valid = !errors.payment && !errors.address;
-		return { valid, errors };
-	}
-
-	private updateUI() {
-		const data = this.customer.getData();
-		this.syncPaymentButtons(data.payment);
-
-		const { valid, errors } = this.validateStep();
-		this.submitBtn.disabled = !valid;
-
-		this.errorsEl.textContent = valid
-			? ''
-			: [errors.payment, errors.address].filter(Boolean).join(' ');
 	}
 }

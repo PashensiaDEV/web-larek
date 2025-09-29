@@ -1,7 +1,7 @@
+// components/view/ContactsFormView.ts
 import { ensureElement, cloneTemplate } from '../../utils/utils';
 import { IEvents } from '../base/events';
-import { Customer } from '../model.data/Customer';
-import { CustomerValidation } from '../../types';
+import { CustomerValidation, ICustomer } from '../../types';
 
 export class ContactsFormView {
 	private root: HTMLElement;
@@ -11,15 +11,9 @@ export class ContactsFormView {
 	private submitBtn: HTMLButtonElement;
 	private errorsEl: HTMLElement;
 
-	constructor(
-		template: HTMLTemplateElement | string, // '#contacts'
-		private events: IEvents,
-		private customer: Customer
-	) {
+	constructor(template: HTMLTemplateElement | string, private events: IEvents) {
 		this.root = cloneTemplate<HTMLElement>(template);
-
-		const maybeForm = this.root as HTMLFormElement;
-		this.form = maybeForm;
+		this.form = this.root as HTMLFormElement;
 
 		this.emailInput = ensureElement<HTMLInputElement>(
 			'input[name="email"]',
@@ -36,63 +30,46 @@ export class ContactsFormView {
 		this.errorsEl = ensureElement<HTMLElement>('.form__errors', this.form);
 
 		this.attach();
-		this.hydrate();
-		this.updateUI();
 	}
 
 	render(): HTMLElement {
 		return this.root;
 	}
 
-	// Прикрепляем слушатели форме
-	private attach() {
+	setValues(data: Partial<ICustomer>): void {
+		if (typeof data.email === 'string') this.emailInput.value = data.email;
+		if (typeof data.phone === 'string') this.phoneInput.value = data.phone;
+	}
+
+	validate(errors: CustomerValidation): void {
+		const emailErr = errors.email;
+		const phoneErr = errors.phone;
+		const valid = !emailErr && !phoneErr;
+
+		this.submitBtn.disabled = !valid;
+		this.errorsEl.textContent = valid
+			? ''
+			: [emailErr, phoneErr].filter(Boolean).join(' ');
+	}
+
+	private attach(): void {
 		this.emailInput.addEventListener('input', () => {
-			this.customer.saveData({ email: this.emailInput.value.trim() });
-			this.updateUI();
+			this.events.emit('order:change', {
+				key: 'email',
+				value: this.emailInput.value.trim(),
+			});
 		});
 
 		this.phoneInput.addEventListener('input', () => {
-			this.customer.saveData({ phone: this.phoneInput.value.trim() });
-			this.updateUI();
+			this.events.emit('order:change', {
+				key: 'phone',
+				value: this.phoneInput.value.trim(),
+			});
 		});
 
 		this.form.addEventListener('submit', (e) => {
 			e.preventDefault();
-			const { valid } = this.validate();
-			if (!valid) return;
-			this.events.emit('order:submit', { customer: this.customer.getData() });
+			this.events.emit('order:submit');
 		});
-	}
-
-	private hydrate() {
-		const data = this.customer.getData();
-		this.emailInput.value = data.email ?? '';
-		this.phoneInput.value = data.phone ?? '';
-	}
-
-	// валидация
-	private validate(): { valid: boolean; errors: CustomerValidation } {
-		const data = this.customer.getData();
-		const errors: CustomerValidation = {
-			payment: undefined,
-			address: undefined,
-			email: undefined,
-			phone: undefined,
-		};
-
-		if (!data.email || !data.email.trim()) errors.email = 'Введите e-mail.';
-		if (!data.phone || !data.phone.trim()) errors.phone = 'Введите телефон.';
-
-		const valid = !errors.email && !errors.phone;
-		return { valid, errors };
-	}
-
-	private updateUI() {
-		const { valid, errors } = this.validate();
-		this.submitBtn.disabled = !valid;
-
-		this.errorsEl.textContent = valid
-			? ''
-			: [errors.email, errors.phone].filter(Boolean).join(' ');
 	}
 }
