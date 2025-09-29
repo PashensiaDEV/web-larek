@@ -5,9 +5,11 @@
   @include mixins.flex(column);
   border: 0;
   border-radius: $defaultBorderRadius;
+  min-width: 300px;
   background-color: $primary;
   color: white;
   padding: $defaultPadding;
+  align-items: center;
 
   &_full {
     flex-direction: row;
@@ -15,6 +17,18 @@
 
     .card__title {
       flex-grow: 0;
+    }
+
+    .card__image {
+      @media (max-width: 1024px) {
+        width: 200px;
+        margin: 0 2rem 0 0;
+    
+      }
+    }
+    @media (max-width: 1024px) {
+      padding: 0;
+  
     }
   }
 
@@ -38,12 +52,25 @@
     @include mixins.flex(row);
     align-items: center;
     gap: $defaultPadding;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+  
+    }
   }
 
   &__image {
     height: 390px;
     aspect-ratio: 1;
     margin: 3.75rem;
+
+    @media (max-width: 1024px) {
+      margin: 15px;
+      width: 12rem;
+  
+    }
+
+    
   }
   &__title {
     font-size: $titleFontSize;
@@ -83,4 +110,5 @@
   &__price {
 
   }
+
 }

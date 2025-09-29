@@ -14,4 +14,9 @@
       border-radius: 0.8rem;
     }
   }
+
+  @media (max-width: 768px) {
+    padding: 5px;
+
+  }
 }
