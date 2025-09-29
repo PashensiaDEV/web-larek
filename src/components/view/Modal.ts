@@ -32,7 +32,6 @@ export class Modal {
     });
 
     // Закрытие по Esc
-    document.addEventListener('keydown', this.onEsc);
   }
 
   // Перезаписать содержимое модалки
@@ -47,6 +46,7 @@ export class Modal {
     this.container.setAttribute('aria-hidden', 'false');
     this.events?.emit('modal:open');
     document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', this.onEsc);
   }
 
   // Закрыть модалку
@@ -57,6 +57,7 @@ export class Modal {
     // this.contentEl.replaceChildren(); - очистить на всякий
     this.events?.emit('modal:close');
     document.body.style.overflow = '';
+    document.removeEventListener('keydown', this.onEsc);
   }
 
   private onEsc = (e: KeyboardEvent) => {
