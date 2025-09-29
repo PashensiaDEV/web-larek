@@ -1,44 +1,48 @@
+
 import { IProduct } from '../../types';
+import { IEvents } from '../base/events';
 
 export class Cart {
-	private products: IProduct[] = [];
+  private products: IProduct[] = [];
 
-	// даваляем все в коризину
-	addProduct(product: IProduct): void {
-		if (this.hasProduct(product.id)) return;
-		this.products.push(product);
-	}
+  constructor(private events: IEvents) {}
 
-	// удаляем из корзины
-	removeProduct(productId: string): void {
-		this.products = this.products.filter((p) => p.id !== productId);
-	}
+  private emitChange() {
+    const payload = { items: this.getItems(), total: this.getSubtotal() };
+    this.events.emit('basket:change', payload);
+    // (опционально, для обратной совместимости)
+    this.events.emit('basket:changed', payload);
+  }
 
-	// получить количество товаров в корзине
-	getItemsCount(): number {
-		return this.products.length;
-	}
+  addProduct(product: IProduct): void {
+    if (this.hasProduct(product.id)) return;
+    this.products.push(product);
+    this.emitChange();
+  }
 
-	// получить все товары корзины
-	getItems(): IProduct[] {
-		return this.products;
-	}
+  removeProduct(productId: string): void {
+    this.products = this.products.filter((p) => p.id !== productId);
+    this.emitChange();
+  }
 
   clear(): void {
     this.products = [];
+    this.emitChange();
   }
 
-	// получить сумарную стоимость товаров из корзины
-	getSubtotal(): number {
-		let proxiAmount: number = 0;
-		for (let i = 0; i < this.products.length; i++) {
-			proxiAmount += this.products[i].price ?? 0;
-		}
-		return proxiAmount;
-	}
+  hasProduct(productId: string): boolean {
+    return this.products.some((p) => p.id === productId);
+  }
 
-	// есть ли там такой продукт
-	hasProduct(productId: string): boolean {
-		return this.products.some((product) => product.id === productId);
-	}
+  getItems(): IProduct[] {
+    return this.products;
+  }
+
+  getItemsCount(): number {
+    return this.products.length;
+  }
+
+  getSubtotal(): number {
+    return this.products.reduce((sum, p) => sum + (p.price ?? 0), 0);
+  }
 }

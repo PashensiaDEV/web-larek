@@ -1,65 +1,58 @@
-import { IProduct } from '../../types';
-import { cloneTemplate, ensureElement, formatNumber } from '../../utils/utils';
+import { ensureElement, cloneTemplate, createElement, formatNumber } from '../../utils/utils';
 import { IEvents } from '../base/events';
 
-// Класс представления корзины как компонента
 export class CartView {
-	protected root: HTMLElement;
-	protected listEl: HTMLElement;
-	protected totalEl: HTMLElement;
-	protected orderBtn: HTMLButtonElement;
-	protected CartIsEmpty: HTMLSpanElement;
+  protected root: HTMLElement;
+  protected listEl: HTMLElement;
+  protected totalEl: HTMLElement;
+  protected orderBtn: HTMLButtonElement;
+  protected emptyEl: HTMLElement;
 
-	constructor(
-		private tpl: HTMLTemplateElement,
-		private itemTpl: HTMLTemplateElement,
-		private events: IEvents
-	) {}
+  constructor(
+    private tpl: HTMLTemplateElement | string,
+    private events: IEvents
+  ) {
+    
+    this.root = cloneTemplate<HTMLElement>(this.tpl);
+    this.listEl = ensureElement<HTMLElement>('.basket__list', this.root);
+    this.totalEl = ensureElement<HTMLElement>('.basket__price', this.root);
+    this.orderBtn = ensureElement<HTMLButtonElement>('.basket__button', this.root);
 
-	render(items: IProduct[], total: number): HTMLElement {
-		this.root = cloneTemplate<HTMLElement>(this.tpl);
-		this.listEl = ensureElement<HTMLElement>('.basket__list', this.root);
-		this.totalEl = ensureElement<HTMLElement>('.basket__price', this.root);
-		this.CartIsEmpty = ensureElement<HTMLElement>('.modal__text', this.root);
-		this.CartIsEmpty.textContent = 'Корзина пуста';
+    
+    this.emptyEl = this.root.querySelector('.modal__text') as HTMLElement;
+    if (!this.emptyEl) {
+      this.emptyEl = createElement<HTMLSpanElement>('span', {
+        className: 'modal__text'
+      });
+      
+      this.listEl.before(this.emptyEl);
+    }
+    this.setEmptyState(true);
 
-		this.orderBtn = ensureElement<HTMLButtonElement>(
-			'.basket__button',
-			this.root
-		);
+    
+    this.orderBtn.addEventListener('click', () => this.events.emit('order:open'));
+  }
 
-		const rows = items.map((p, idx) => {
-			const li = cloneTemplate<HTMLLIElement>(this.itemTpl);
-			if (!items ) {this.CartIsEmpty.textContent = 'Корзина пуста' } else {
-				this.CartIsEmpty.textContent = ''
-			}
-			ensureElement<HTMLElement>('.basket__item-index', li).textContent =
-				String(idx + 1);
-			ensureElement<HTMLElement>('.card__title', li).textContent = p.title;
-			ensureElement<HTMLElement>(
-				'.card__price',
-				li
-			).textContent = `${formatNumber(Number(p.price ?? 0))} синапсов`;
+  render(): HTMLElement {
+    return this.root;
+  }
 
-			const delBtn = ensureElement<HTMLButtonElement>(
-				'.basket__item-delete',
-				li
-			);
-			delBtn.addEventListener('click', () =>
-				this.events.emit('cart:remove', { id: p.id })
-			);
-			return li;
-		});
+  setItems(rows: HTMLElement[]): void {
+    this.listEl.replaceChildren(...rows);
+    this.setEmptyState(rows.length === 0);
+  }
 
-		this.listEl.replaceChildren(...rows);
 
-		// Итого + кнопка
-		this.totalEl.textContent = `${formatNumber(total)} синапсов`;
-		this.orderBtn.disabled = items.length === 0;
-		this.orderBtn.addEventListener('click', () =>
-			this.events.emit('order:open')
-		);
+  setTotal(total: number): void {
+    this.totalEl.textContent = `${formatNumber(total)} синапсов`;
+  }
 
-		return this.root;
-	}
+
+  enableOrderButton(enabled: boolean): void {
+    this.orderBtn.disabled = !enabled;
+  }
+
+  setEmptyState(isEmpty: boolean, text: string = 'Корзина пуста'): void {
+    this.emptyEl.textContent = isEmpty ? text : '';
+  }
 }

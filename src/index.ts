@@ -16,6 +16,7 @@ import { Customer } from './components/model.data/Customer';
 import { GalleryProductCardView } from './components/view/GalleryProductCardView';
 import { ProductModalView } from './components/view/ProductModalView';
 import { CartView } from './components/view/CartView';
+import { BasketItemView } from './components/view/BasketItemView';
 
 import { ContactsFormView } from './components/view/ContactsFormView';
 import { SuccessView } from './components/view/SuccessView';
@@ -48,12 +49,12 @@ const successTpl = ensureElement<HTMLTemplateElement>('#success');
 const events = new EventEmitter();
 const api = new apiInterpretator(API_URL);
 const catalog = new Catalog();
-const cart = new Cart();
+const cart   = new Cart(events);
 const customer = new Customer();
 const modal = new Modal(modalContainer, events, {
 	activeClass: 'modal_active',
 });
-const cartView = new CartView(basketTpl, basketItemTpl, events);
+const cartView = new CartView(basketTpl, events);
 
 // Выводим все логи - посмотрел в оно тебе надо
 events.onAll(({ eventName, data }) => console.log('[evt]', eventName, data));
@@ -64,9 +65,7 @@ const updateBasketCounter = () => {
 };
 
 // Действия открытия корзины инициализация
-headerBasketBtn.addEventListener('click', () => {
-	events.emit('basket:open');
-});
+headerBasketBtn.addEventListener('click', () => events.emit('basket:open'));
 
 // Ивенты
 
@@ -93,45 +92,34 @@ events.on<{ item: IProduct }>('card:select', ({ item }) => {
 
 // Открыть корзину
 events.on('basket:open', () => {
-	modal.open(cartView.render(cart.getItems(), cart.getSubtotal()));
+  modal.open(cartView.render());
 });
 
 // Состояние корзины изменилось  обновить счётчик и если открыта модалка корзины перерисовать её
-events.on<{ items: IProduct[]; total: number }>(
-	'basket:changed',
-	({ items, total }) => {
-		updateBasketCounter();
+events.on<{ items: IProduct[]; total: number }>('basket:change', ({ items, total }) => {
+  const rows = items.map((p, idx) => {
+    const row = new BasketItemView(basketItemTpl, events);
+    row.setProduct(p, idx);
+    return row.render();
+  });
 
-		const isBasketShown =
-			modalContainer.classList.contains('modal_active') &&
-			!!modalContainer.querySelector('.basket');
-
-		if (isBasketShown) {
-			modal.setContent(cartView.render(items, total));
-		}
-	}
-);
+  cartView.setItems(rows);
+  cartView.setTotal(total);
+  cartView.enableOrderButton(items.length > 0);
+  headerBasketCount.textContent = String(items.length);
+});
 
 // Управление корзиной
-events.on<{ product: IProduct; inCart?: boolean }>(
-	'cart:toggle',
-	({ product, inCart }) => {
-		if (product.price == null) return;
-
-		const already = cart.hasProduct(product.id);
-		if (typeof inCart === 'boolean') {
-			if (inCart && !already) cart.addProduct(product);
-			if (!inCart && already) cart.removeProduct(product.id);
-		} else {
-			already ? cart.removeProduct(product.id) : cart.addProduct(product);
-		}
-
-		events.emit('basket:changed', {
-			items: cart.getItems(),
-			total: cart.getSubtotal(),
-		});
-	}
-);
+events.on<{ product: IProduct; inCart?: boolean }>('cart:toggle', ({ product, inCart }) => {
+  if (product.price == null) return;
+  const already = cart.hasProduct(product.id);
+  if (typeof inCart === 'boolean') {
+    if (inCart && !already) cart.addProduct(product);
+    if (!inCart && already) cart.removeProduct(product.id);
+  } else {
+    already ? cart.removeProduct(product.id) : cart.addProduct(product);
+  }
+});
 
 events.on<{ id: string }>('cart:remove', ({ id }) => {
 	cart.removeProduct(id);
