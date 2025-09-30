@@ -46,7 +46,7 @@ const modalContainer = ensureElement<HTMLElement>('#modal-container');
 // Классы
 const events = new EventEmitter();
 const api = new apiInterpretator(API_URL); // если у тебя два аргумента (CDN_URL, API_URL) — верни как было
-const catalog = new Catalog();
+const catalog = new Catalog(events);
 const cart = new Cart(events);
 const customer = new Customer(events);
 
@@ -203,7 +203,6 @@ events.on('order:success:close', () => {
 	try {
 		const products = await api.loadProducts();
 		catalog.setProducts(products);
-		events.emit('catalogList:changed');
 		events.emit('basket:change');
 	} catch (e) {
 		console.error('Init error: failed to load products', e);
