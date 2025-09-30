@@ -5,6 +5,8 @@
   @include mixins.container;
   @include mixins.grid(600px, 24px);
 
+  
+
   &__item {
     border: none;
     border-radius: $defaultBorderRadius;
@@ -15,8 +17,9 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 700px) {
     padding: 5px;
+    @include mixins.grid(350px, 24px);
 
   }
 }
