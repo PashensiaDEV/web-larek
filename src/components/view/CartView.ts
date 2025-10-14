@@ -4,20 +4,28 @@ import {
 	createElement,
 	formatNumber,
 } from '../../utils/utils';
+import { Component } from '../base/Component';
 import { IEvents } from '../base/events';
 
-export class CartView {
-	protected root: HTMLElement;
+interface IBasketView {
+	root: HTMLElement;
+	listEl: HTMLElement;
+	totalEl: HTMLElement;
+	orderBtn: HTMLButtonElement;
+	emptyEl: HTMLElement;
+}
+
+export class CartView extends Component<IBasketView> {
 	protected listEl: HTMLElement;
 	protected totalEl: HTMLElement;
 	protected orderBtn: HTMLButtonElement;
 	protected emptyEl: HTMLElement;
 
 	constructor(
-		private tpl: HTMLTemplateElement | string,
+		private root: HTMLElement,
 		private events: IEvents
 	) {
-		this.root = cloneTemplate<HTMLElement>(this.tpl);
+		super(root)
 		this.listEl = ensureElement<HTMLElement>('.basket__list', this.root);
 		this.totalEl = ensureElement<HTMLElement>('.basket__price', this.root);
 		this.orderBtn = ensureElement<HTMLButtonElement>(
@@ -40,9 +48,9 @@ export class CartView {
 		);
 	}
 
-	render(): HTMLElement {
-		return this.root;
-	}
+	// render(): HTMLElement {
+	// 	return this.root;
+	// }
 
 	setItems(rows: HTMLElement[]): void {
 		this.listEl.replaceChildren(...rows);

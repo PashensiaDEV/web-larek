@@ -23,7 +23,7 @@ import { ContactsFormView } from './components/view/ContactsFormView';
 import { SuccessView } from './components/view/SuccessView';
 
 // Утилиты/константы/типы
-import { ensureElement } from './utils/utils';
+import { cloneTemplate, ensureElement } from './utils/utils';
 import { API_URL, CDN_URL } from './utils/constants';
 import {
 	CustomerValidation,
@@ -55,7 +55,7 @@ const page = new Page(document, events);
 const modal = new Modal(modalContainer, events, {
 	activeClass: 'modal_active',
 });
-const cartView = new CartView(basketTpl, events);
+const cartView = new CartView(cloneTemplate(basketTpl), events);
 
 // Формы
 const orderFormView = new OrderFormView(orderTpl, events);
