@@ -46,6 +46,7 @@ export class Modal {
     this.container.setAttribute('aria-hidden', 'false');
     this.events?.emit('modal:open');
     document.body.style.overflow = 'hidden';
+    this.container.style.overflow = 'auto';
     document.addEventListener('keydown', this.onEsc);
   }
 

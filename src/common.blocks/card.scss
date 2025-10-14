@@ -5,10 +5,10 @@
   @include mixins.flex(column);
   border: 0;
   border-radius: $defaultBorderRadius;
-  min-width: 300px;
   background-color: $primary;
   color: white;
   padding: $defaultPadding;
+  min-width: 375px;
   // align-items: center;
 
   &_full {
