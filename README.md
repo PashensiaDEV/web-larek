@@ -329,7 +329,7 @@ type OrderResponse = { id?: string; total?: number };
 - `btnCash: HTMLButtonElement` — выбор оплаты при получении.
 - `addressInput: HTMLInputElement` — поле адреса.
 - `submitBtn: HTMLButtonElement` — кнопка «Далее».
-- `errorsEl: HTMLElement` — контейнер ошибок.
+- `errorsEl: HTMLElement` — контейнер ошибок
 - `events: IEvents` — брокер событий.
 - `customer: Customer` — модель покупателя.  
 **Методы**
