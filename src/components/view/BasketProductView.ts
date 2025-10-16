@@ -1,20 +1,26 @@
 import { IProduct } from '../../types';
 import { cloneTemplate, ensureElement, formatNumber } from '../../utils/utils';
 import { IEvents } from '../base/events';
+import { ProductComponent } from './ProductComponent';
 
-export class BasketItemView {
+export interface ICardView {
+  index: number;
+  product: IProduct;
+}
+
+export class BasketProductView extends ProductComponent<ICardView> {
   private root: HTMLElement;
   private indexEl: HTMLElement;
   private titleEl: HTMLElement;
   private priceEl: HTMLElement;
   private delBtn: HTMLButtonElement;
-  private product?: IProduct;
 
   constructor(
-    itemTpl: HTMLTemplateElement | string,
+    itemTpl: HTMLElement,
     private events: IEvents
   ) {
-    this.root = cloneTemplate<HTMLElement>(itemTpl);
+    super(itemTpl)
+    this.root = itemTpl;
     this.indexEl = ensureElement<HTMLElement>('.basket__item-index', this.root);
     this.titleEl = ensureElement<HTMLElement>('.card__title', this.root);
     this.priceEl = ensureElement<HTMLElement>('.card__price', this.root);
@@ -25,16 +31,22 @@ export class BasketItemView {
     });
   }
 
+  set index(value:number) {
+    this.indexEl.textContent = String(value + 1);
+  }
 
-  setProduct(product: IProduct, index: number): void {
-    this.product = product;
-    this.indexEl.textContent = String(index + 1);
-    this.titleEl.textContent = product.title;
-    const priceNum = Number(product.price ?? 0);
+  set product(value: IProduct) {
+    this.titleEl.textContent = value.title;
+    const priceNum = Number(value.price ?? 0);
     this.priceEl.textContent = `${formatNumber(priceNum)} синапсов`;
   }
 
-  render(): HTMLElement {
-    return this.root;
-  }
+
+  // setProduct(product: IProduct, index: number): void {
+  //   this.product = product;
+  //   this.indexEl.textContent = String(index + 1);
+  //   this.titleEl.textContent = product.title;
+  //   const priceNum = Number(product.price ?? 0);
+  //   this.priceEl.textContent = `${formatNumber(priceNum)} синапсов`;
+  // }
 }

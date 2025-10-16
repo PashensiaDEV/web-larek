@@ -26,7 +26,7 @@ export class ProductModalView {
 		this.root.classList.add('card', 'card_full');
 	}
 
-	render(item: IProduct): HTMLElement {
+	setProduct(item: IProduct){
 		const categoryEl = ensureElement<HTMLElement>('.card__category', this.root);
 		const titleEl = ensureElement<HTMLElement>('.card__title', this.root);
 		const textEl = ensureElement<HTMLElement>('.card__text', this.root);
@@ -72,6 +72,9 @@ export class ProductModalView {
 		}
 
 		this.root.dataset.id = item.id;
+	}
+
+	render(): HTMLElement {
 		return this.root;
 	}
 

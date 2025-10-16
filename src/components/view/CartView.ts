@@ -4,7 +4,7 @@ import {
 	createElement,
 	formatNumber,
 } from '../../utils/utils';
-import { Component } from '../base/Component';
+import { Component } from '../base/component';
 import { IEvents } from '../base/events';
 
 interface IBasketView {

@@ -16,7 +16,7 @@ import { Customer } from './components/model.data/Customer';
 import { Page } from './components/view/Page';
 import { Modal } from './components/view/Modal';
 import { CartView } from './components/view/CartView';
-import { BasketItemView } from './components/view/BasketItemView';
+import { BasketProductView } from './components/view/BasketProductView';
 import { GalleryProductCardView } from './components/view/GalleryProductCardView';
 import { ProductModalView } from './components/view/ProductModalView';
 import { ContactsFormView } from './components/view/ContactsFormView';
@@ -83,7 +83,8 @@ events.on<{ item: IProduct }>('card:select', ({ item }) => {
 	const view = new ProductModalView(previewTpl, events, {
 		inCart: cart.hasProduct(product.id),
 	});
-	modal.open(view.render(product));
+	view.setProduct(product)
+	modal.open(view.render());
 });
 
 //  Корзина
@@ -97,9 +98,11 @@ events.on('basket:change', () => {
 	const total = cart.getSubtotal();
 
 	const rows = items.map((p, idx) => {
-		const row = new BasketItemView(basketItemTpl, events);
-		row.setProduct(p, idx);
-		return row.render();
+		const row = new BasketProductView(cloneTemplate(basketItemTpl), events);
+		return row.render({
+			index: idx,
+			product: p
+		});
 	});
 
 	cartView.setItems(rows);
