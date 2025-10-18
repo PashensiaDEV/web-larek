@@ -1,18 +1,23 @@
 // components/view/ContactsFormView.ts
-import { ensureElement, cloneTemplate } from '../../utils/utils';
+import { ensureElement } from '../../utils/utils';
 import { IEvents } from '../base/events';
-import { CustomerValidation, ICustomer } from '../../types';
+import { CustomerValidation } from '../../types';
+import { FormsComponent } from './FormsComponent';
 
-export class ContactsFormView {
+interface IContactsForm {
+	email: string;
+	phone: string;
+}
+
+export class ContactsFormView extends FormsComponent<IContactsForm> {
 	private root: HTMLElement;
 	private form: HTMLFormElement;
 	private emailInput: HTMLInputElement;
 	private phoneInput: HTMLInputElement;
-	private submitBtn: HTMLButtonElement;
-	private errorsEl: HTMLElement;
 
-	constructor(template: HTMLTemplateElement | string, private events: IEvents) {
-		this.root = cloneTemplate<HTMLElement>(template);
+	constructor(template: HTMLElement, private events: IEvents) {
+		super(template);
+		this.root = template;
 		this.form = this.root as HTMLFormElement;
 
 		this.emailInput = ensureElement<HTMLInputElement>(
@@ -32,24 +37,16 @@ export class ContactsFormView {
 		this.attach();
 	}
 
-	render(): HTMLElement {
-		return this.root;
+	set email(value: string) {
+		this.emailInput.value = value;
 	}
 
-	setValues(data: Partial<ICustomer>): void {
-		if (typeof data.email === 'string') this.emailInput.value = data.email;
-		if (typeof data.phone === 'string') this.phoneInput.value = data.phone;
+	set phone(value: string) {
+		this.phoneInput.value = value;
 	}
 
 	validate(errors: CustomerValidation): void {
-		const emailErr = errors.email;
-		const phoneErr = errors.phone;
-		const valid = !emailErr && !phoneErr;
-
-		this.submitBtn.disabled = !valid;
-		this.errorsEl.textContent = valid
-			? ''
-			: [emailErr, phoneErr].filter(Boolean).join(' ');
+		super.validate(errors, ['email', 'phone']);
 	}
 
 	private attach(): void {

@@ -58,8 +58,8 @@ const modal = new Modal(modalContainer, events, {
 const cartView = new CartView(cloneTemplate(basketTpl), events);
 
 // Формы
-const orderFormView = new OrderFormView(orderTpl, events);
-const contactsFormView = new ContactsFormView(contactsTpl, events);
+const orderFormView = new OrderFormView(cloneTemplate(orderTpl), events);
+const contactsFormView = new ContactsFormView(cloneTemplate(contactsTpl), events);
 const successView = new SuccessView(successTpl, events);
 
 // Логи
@@ -82,11 +82,12 @@ events.on<{ item: string }>('card:select', ({ item }) => {
 	const product = catalog.getProduct(item);
 	if (!product) return;
 
-	const view = new ProductModalView(previewTpl, events, {
+	const view = new ProductModalView(cloneTemplate(previewTpl), events, {
 		inCart: cart.hasProduct(product.id),
 	});
-	view.setProduct(product)
-	modal.open(view.render());
+	modal.open(view.render({...product,
+		inCart: cart.hasProduct(product.id),
+	}));
 });
 
 //  Корзина
@@ -114,9 +115,11 @@ events.on('basket:change', () => {
 });
 
 // Управление корзиной
-events.on<{ product: IProduct; inCart?: boolean }>(
+events.on<{ productId: string; inCart?: boolean }>(
 	'cart:toggle',
-	({ product, inCart }) => {
+	({ productId, inCart }) => {
+		const product = catalog.getProduct(productId);
+		if (!product) return;
 		if (product.price == null) return;
 		const already = cart.hasProduct(product.id);
 		if (typeof inCart === 'boolean') {
@@ -136,17 +139,20 @@ events.on<{ id: string }>('cart:remove', ({ id }) => {
 
 // Открыть шаг 1:
 events.on('order:open', () => {
-	orderFormView.setValues(customer.getData());
-	modal.setContent(orderFormView.render());
-	// показать текущее состояние валидации
-	events.emit('form:validate', customer.validateData());
+	const data = customer.getData();
+	modal.setContent(orderFormView.render({
+		payment: data.payment,
+		address: data.address
+	}));
 });
 
 // Шаг 1 пройден  открыть шаг 2
 events.on('order:step1:submit', () => {
-	contactsFormView.setValues(customer.getData());
-	modal.setContent(contactsFormView.render());
-	events.emit('form:validate', customer.validateData());
+	const data = customer.getData();
+	modal.setContent(contactsFormView.render({
+		email: data.email,
+		phone: data.phone
+	}));
 });
 
 // Любое изменение поля заказа

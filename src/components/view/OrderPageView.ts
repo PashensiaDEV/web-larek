@@ -2,18 +2,23 @@
 import { ensureElement, cloneTemplate } from '../../utils/utils';
 import { IEvents } from '../base/events';
 import { CustomerValidation, ICustomer, PaymentMethod } from '../../types';
+import { FormsComponent } from './FormsComponent';
 
-export class OrderFormView {
+interface IOrderForm {
+	payment: PaymentMethod;
+	address: string;
+}
+
+export class OrderFormView extends FormsComponent<IOrderForm> {
 	private root: HTMLElement;
 	private form: HTMLFormElement;
 	private btnCard: HTMLButtonElement;
 	private btnCash: HTMLButtonElement;
 	private addressInput: HTMLInputElement;
-	private submitBtn: HTMLButtonElement;
-	private errorsEl: HTMLElement;
 
-	constructor(template: HTMLTemplateElement | string, private events: IEvents) {
-		this.root = cloneTemplate<HTMLElement>(template);
+	constructor(template: HTMLElement, private events: IEvents) {
+		super(template);
+		this.root = template;
 		this.form = this.root as HTMLFormElement;
 
 		this.btnCard = ensureElement<HTMLButtonElement>(
@@ -37,24 +42,16 @@ export class OrderFormView {
 		this.attachEvents();
 	}
 
-	render(): HTMLElement {
-		return this.root;
+	set address(value: string) {
+		this.addressInput.value = value;
 	}
 
-	setValues(data: Partial<ICustomer>): void {
-		if (typeof data.address === 'string') {
-			this.addressInput.value = data.address;
-		}
-		this.syncPaymentButtons(data.payment);
+	set payment(value: PaymentMethod) {
+		this.syncPaymentButtons(value);
 	}
 
-	// Валидация из модели!
 	validate(errors: CustomerValidation): void {
-		const valid = !errors.payment && !errors.address;
-		this.submitBtn.disabled = !valid;
-		this.errorsEl.textContent = valid
-			? ''
-			: [errors.payment, errors.address].filter(Boolean).join(' ');
+		super.validate(errors, ['payment', 'address']);
 	}
 
 	// слушатели на ружу

@@ -63,6 +63,7 @@ export class GalleryProductCardView extends ProductComponent<IGalleryCard> {
 			this.imgEl.alt = '';
 		}
 	}
+	
 
 	set price(value:number) {
 		this.priceEl.textContent = this.formatPrice(value);
