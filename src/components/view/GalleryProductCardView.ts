@@ -1,25 +1,30 @@
-import { IProduct } from '../../types';
 import {
-	cloneTemplate,
 	ensureElement,
-	formatNumber,
-	isEmpty,
 	setElementData,
 } from '../../utils/utils';
 import { CDN_URL } from '../../utils/constants';
 import { IEvents } from '../base/events';
 
-export class GalleryProductCardView {
+import { ProductComponent } from './ProductComponent';
+
+interface IGalleryCard {
+	id:string;
+	category:string;
+	title:string;
+	image:string;
+	price:number;
+}
+
+export class GalleryProductCardView extends ProductComponent<IGalleryCard> {
 	private root: HTMLElement;
 	private categoryEl: HTMLElement;
 	private titleEl: HTMLElement;
 	private imgEl: HTMLImageElement;
 	private priceEl: HTMLElement;
 
-	private product?: IProduct;
-
-	constructor(template: HTMLTemplateElement | string, private events: IEvents) {
-		this.root = cloneTemplate<HTMLElement>(template);
+	constructor(template: HTMLElement, private events: IEvents) {
+		super(template)
+		this.root = template;
 
 		this.categoryEl = ensureElement<HTMLElement>('.card__category', this.root);
 		this.titleEl = ensureElement<HTMLElement>('.card__title', this.root);
@@ -29,63 +34,73 @@ export class GalleryProductCardView {
 		// Клик  один раз эмитим выбранный товар
 		this.root.addEventListener('click', (e) => {
 			e.preventDefault();
-			if (this.product) {
-				this.events.emit('card:select', { item: this.product });
+			const id = (e.currentTarget as HTMLElement)?.dataset.id;
+			if (id) {
+				this.events.emit('card:select', { item: id });
 			}
 		});
 	}
 
-	setProduct(item: IProduct): void {
-		this.product = item;
+	set id(value: string) {
+    setElementData(this.root, { id: value });
+  }
 
-		// dataset id
-		setElementData(this.root, { id: item.id });
+	set category(value:string) {
+ 	this.categoryEl.textContent = value;
+ 	this.applyCategoryClass(this.categoryEl, value);
+	}
 
-		// Категория
-		const categoryLabel =
-			(item as any).category ?? (item as any).categoryLabel ?? '';
-		this.categoryEl.textContent = categoryLabel;
-		this.applyCategoryClass(this.categoryEl, categoryLabel);
+	set title(value:string) {
+		this.titleEl.textContent = value;
+		this.imgEl.alt = value;
+	}
 
-		// Заголовок
-		this.titleEl.textContent = item.title;
-
-		// Картинка
-		if ((item as any).image) {
-			this.imgEl.src = CDN_URL + (item as any).image;
-			this.imgEl.alt = item.title;
+	set image(value:string) {
+		if (value) {
+			this.imgEl.src = CDN_URL + value;
 		} else {
 			this.imgEl.removeAttribute('src');
 			this.imgEl.alt = '';
 		}
-
-		// Цена
-		this.priceEl.textContent = this.formatPrice((item as any).price);
 	}
 
-	render(): HTMLElement {
-		return this.root;
+	set price(value:number) {
+		this.priceEl.textContent = this.formatPrice(value);
 	}
 
-	private formatPrice(price: unknown): string {
-		if (isEmpty(price)) return 'бесценно';
-		const n = Number(price);
-		return Number.isFinite(n) ? `${formatNumber(n)} синапсов` : 'бесценно';
-	}
+	
 
-	// метод по присваиванию категории
-	private applyCategoryClass(el: HTMLElement, category?: string) {
-		[...el.classList]
-			.filter((c) => c.startsWith('card__category_'))
-			.forEach((c) => el.classList.remove(c));
+	// setProduct(item: IProduct): void {
+	// 	this.productId = item.id;
 
-		const map: Record<string, string> = {
-			'софт-скил': 'card__category_soft',
-			другое: 'card__category_other',
-			'хард-скил': 'card__category_hard',
-			дополнительное: 'card__category_additional',
-			кнопка: 'card__category_button',
-		};
-		if (category && map[category]) el.classList.add(map[category]);
-	}
+	// 	// dataset id
+	// 	setElementData(this.root, { id: item.id });
+
+	// 	// Категория
+	// 	const categoryLabel =
+	// 		(item as any).category ?? (item as any).categoryLabel ?? '';
+	// 	this.categoryEl.textContent = categoryLabel;
+	// 	this.applyCategoryClass(this.categoryEl, categoryLabel);
+
+	// 	// Заголовок
+	// 	this.titleEl.textContent = item.title;
+
+	// 	// Картинка
+	// 	if ((item as any).image) {
+	// 		this.imgEl.src = CDN_URL + (item as any).image;
+	// 		this.imgEl.alt = item.title;
+	// 	} else {
+	// 		this.imgEl.removeAttribute('src');
+	// 		this.imgEl.alt = '';
+	// 	}
+
+	// 	// Цена
+	// 	this.priceEl.textContent = this.formatPrice((item as any).price);
+	// }
+
+	// render(): HTMLElement {
+	// 	return this.root;
+	// }
+
+	
 }

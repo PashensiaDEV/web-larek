@@ -1,5 +1,5 @@
 import { IProduct } from '../../types';
-import { cloneTemplate, ensureElement, formatNumber } from '../../utils/utils';
+import { cloneTemplate, ensureElement, formatNumber, setElementData } from '../../utils/utils';
 import { IEvents } from '../base/events';
 import { ProductComponent } from './ProductComponent';
 
@@ -14,6 +14,7 @@ export class BasketProductView extends ProductComponent<ICardView> {
   private titleEl: HTMLElement;
   private priceEl: HTMLElement;
   private delBtn: HTMLButtonElement;
+  private productId?: string;
 
   constructor(
     itemTpl: HTMLElement,
@@ -27,7 +28,8 @@ export class BasketProductView extends ProductComponent<ICardView> {
     this.delBtn  = ensureElement<HTMLButtonElement>('.basket__item-delete', this.root);
 
     this.delBtn.addEventListener('click', () => {
-      if (this.product) this.events.emit('cart:remove', { id: this.product.id });
+      const id = this.root.dataset.id;
+      if (this.root.dataset.id) this.events.emit('cart:remove', { id });
     });
   }
 
@@ -35,9 +37,16 @@ export class BasketProductView extends ProductComponent<ICardView> {
     this.indexEl.textContent = String(value + 1);
   }
 
-  set product(value: IProduct) {
-    this.titleEl.textContent = value.title;
-    const priceNum = Number(value.price ?? 0);
+  set id(value: string) {
+    setElementData(this.root, { id: value });
+  }
+
+  set title(value:string) {
+    this.titleEl.textContent = value;
+  }
+
+  set price(value:number|null) {
+    const priceNum = Number(value ?? 0);
     this.priceEl.textContent = `${formatNumber(priceNum)} синапсов`;
   }
 

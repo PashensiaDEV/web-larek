@@ -68,16 +68,18 @@ events.onAll(({ eventName, data }) => console.log('[evt]', eventName, data));
 //  Каталог
 events.on('catalogList:changed', () => {
 	const cards = catalog.getProducts().map((item: IProduct) => {
-		const view = new GalleryProductCardView(cardTpl, events);
-		view.setProduct(item);
+		const view = new GalleryProductCardView(cloneTemplate(cardTpl), events);
+		view.render({
+			...item
+		});
 		return view.render();
 	});
 	page.renderCatalog(cards);
 });
 
 // Клик по карточке  модалка товара
-events.on<{ item: IProduct }>('card:select', ({ item }) => {
-	const product = catalog.getProduct(item.id);
+events.on<{ item: string }>('card:select', ({ item }) => {
+	const product = catalog.getProduct(item);
 	if (!product) return;
 
 	const view = new ProductModalView(previewTpl, events, {
@@ -97,11 +99,11 @@ events.on('basket:change', () => {
 	const items = cart.getItems();
 	const total = cart.getSubtotal();
 
-	const rows = items.map((p, idx) => {
+	const rows = items.map((product, idx) => {
 		const row = new BasketProductView(cloneTemplate(basketItemTpl), events);
 		return row.render({
 			index: idx,
-			product: p
+			...product
 		});
 	});
 
