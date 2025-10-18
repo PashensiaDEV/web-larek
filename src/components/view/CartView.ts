@@ -8,11 +8,7 @@ import { Component } from '../base/component';
 import { IEvents } from '../base/events';
 
 interface IBasketView {
-	root: HTMLElement;
-	listEl: HTMLElement;
-	totalEl: HTMLElement;
-	orderBtn: HTMLButtonElement;
-	emptyEl: HTMLElement;
+	
 }
 
 export class CartView extends Component<IBasketView> {
