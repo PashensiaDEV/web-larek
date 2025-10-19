@@ -14,11 +14,13 @@ export class BasketProductView extends ProductComponent<ICardView> {
   private titleEl: HTMLElement;
   private priceEl: HTMLElement;
   private delBtn: HTMLButtonElement;
-  private productId?: string;
+  // private productId?: string;
 
   constructor(
     itemTpl: HTMLElement,
-    private events: IEvents
+    private events: IEvents,
+    onClick: () => void
+    
   ) {
     super(itemTpl)
     this.root = itemTpl;
@@ -28,8 +30,7 @@ export class BasketProductView extends ProductComponent<ICardView> {
     this.delBtn  = ensureElement<HTMLButtonElement>('.basket__item-delete', this.root);
 
     this.delBtn.addEventListener('click', () => {
-      const id = this.root.dataset.id;
-      if (this.root.dataset.id) this.events.emit('cart:remove', { id });
+      onClick();
     });
   }
 
@@ -37,9 +38,9 @@ export class BasketProductView extends ProductComponent<ICardView> {
     this.indexEl.textContent = String(value + 1);
   }
 
-  set id(value: string) {
-    setElementData(this.root, { id: value });
-  }
+  // set id(value: string) {
+  //   setElementData(this.root, { id: value });
+  // }
 
   set title(value:string) {
     this.titleEl.textContent = value;

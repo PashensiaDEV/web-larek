@@ -29,6 +29,7 @@ export class ProductModalView extends ProductComponent<IProductModal> {
 	constructor(
 		template: HTMLElement,
 		private events: IEvents,
+		onClick: () => void
 	) {
 		const root = template;
 		super(root);
@@ -43,7 +44,7 @@ export class ProductModalView extends ProductComponent<IProductModal> {
 		this.priceEl = ensureElement<HTMLElement>('.card__price', this.root);
 
 		this.buttonEl.addEventListener('click', () => {
-				this.events.emit('cart:toggle');
+				onClick()
 			}
 		);
 	}

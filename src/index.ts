@@ -92,7 +92,7 @@ events.on('card:choosen', () => {
 		} else {
 		text = inCart ? 'Удалить из корзины' : 'В корзину'
 	}
-	const view = new ProductModalView(cloneTemplate(previewTpl), events);
+	const view = new ProductModalView(cloneTemplate(previewTpl), events, () => events.emit('cart:toggle'));
 	modal.open(view.render({...product,
 		inCart: text
 	}));
@@ -109,7 +109,7 @@ events.on('basket:change', () => {
 	const total = cart.getSubtotal();
 
 	const rows = items.map((product, idx) => {
-		const row = new BasketProductView(cloneTemplate(basketItemTpl), events);
+		const row = new BasketProductView(cloneTemplate(basketItemTpl), events,() => events.emit('cart:remove', { id:product.id }));
 		return row.render({
 			index: idx,
 			...product
@@ -128,7 +128,6 @@ events.on(
 		modal.close()
 		const product = catalog.getSelected();
 		const selected = cart.hasProduct(product.id)
-		// if (product.price == null) return;
 
 		if(selected) {
 			cart.removeProduct(product.id)
