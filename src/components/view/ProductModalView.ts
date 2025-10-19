@@ -7,10 +7,6 @@ import { IEvents } from '../base/events';
 
 import { ProductComponent } from './ProductComponent';
 
-type ProductModalOptions = {
-	inCart: boolean;
-};
-
 interface IProductModal {
 	id: string;
 	category: string;
@@ -18,7 +14,7 @@ interface IProductModal {
 	description: string;
 	image: string;
 	price: number;
-	inCart: boolean;
+	inCart: string;
 }
 
 export class ProductModalView extends ProductComponent<IProductModal> {
@@ -29,17 +25,14 @@ export class ProductModalView extends ProductComponent<IProductModal> {
 	private imgEl: HTMLImageElement;
 	private buttonEl: HTMLButtonElement;
 	private priceEl: HTMLElement;
-	private _inCart: boolean;
 
 	constructor(
 		template: HTMLElement,
 		private events: IEvents,
-		opts: ProductModalOptions
 	) {
 		const root = template;
 		super(root);
 		this.root = root;
-		this._inCart = !!opts.inCart;
 		this.root.classList.add('card', 'card_full');
 
 		this.categoryEl = ensureElement<HTMLElement>('.card__category', this.root);
@@ -50,15 +43,9 @@ export class ProductModalView extends ProductComponent<IProductModal> {
 		this.priceEl = ensureElement<HTMLElement>('.card__price', this.root);
 
 		this.buttonEl.addEventListener('click', () => {
-			this.inCart = !this._inCart;
-			const productId = this.root.dataset.id;
-			if (productId) {
-				this.events.emit('cart:toggle', { 
-					productId: productId as string, 
-					inCart: this._inCart 
-				});
+				this.events.emit('cart:toggle');
 			}
-		});
+		);
 	}
 
 	set id(value: string) {
@@ -90,24 +77,14 @@ export class ProductModalView extends ProductComponent<IProductModal> {
 
 	set price(value: number | null) {
 		this.priceEl.textContent = this.formatPrice(value);
-		this.updateButton();
-	}
-
-	set inCart(value: boolean) {
-		this._inCart = value;
-		this.updateButton();
-	}
-
-	private updateButton() {
-		const priceIsEmpty = this.priceEl.textContent === 'бесценно';
 		
-		if (priceIsEmpty) {
+		if (value == null) {
 			this.buttonEl.disabled = true;
-			this.buttonEl.textContent = 'Недоступно';
-		} else {
-			this.buttonEl.disabled = false;
-			this.buttonEl.textContent = this._inCart ? 'Удалить из корзины' : 'В корзину';
 		}
+	}
+
+	set inCart(value: string) {
+		this.buttonEl.textContent = value;
 	}
 
 }

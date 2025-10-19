@@ -68,7 +68,7 @@ events.onAll(({ eventName, data }) => console.log('[evt]', eventName, data));
 //  Каталог
 events.on('catalogList:changed', () => {
 	const cards = catalog.getProducts().map((item: IProduct) => {
-		const view = new GalleryProductCardView(cloneTemplate(cardTpl), events);
+		const view = new GalleryProductCardView(cloneTemplate(cardTpl), events, () => events.emit('card:select', { item: item.id }));
 		view.render({
 			...item
 		});
@@ -77,18 +77,26 @@ events.on('catalogList:changed', () => {
 	page.renderCatalog(cards);
 });
 
-// Клик по карточке  модалка товара
+// Клик по карточке записали в модель данных
 events.on<{ item: string }>('card:select', ({ item }) => {
-	const product = catalog.getProduct(item);
-	if (!product) return;
-
-	const view = new ProductModalView(cloneTemplate(previewTpl), events, {
-		inCart: cart.hasProduct(product.id),
-	});
-	modal.open(view.render({...product,
-		inCart: cart.hasProduct(product.id),
-	}));
+	 catalog.selectProduct(item);
 });
+
+// По эмиту из каталога записывает нужную нам карточку и открываем окно
+events.on('card:choosen', () => {
+	const product = catalog.getSelected();
+		const inCart = cart.hasProduct(product.id);
+		let text = '';
+		if (product.price == null) {
+			text = 'Недоступно'
+		} else {
+		text = inCart ? 'Удалить из корзины' : 'В корзину'
+	}
+	const view = new ProductModalView(cloneTemplate(previewTpl), events);
+	modal.open(view.render({...product,
+		inCart: text
+	}));
+})
 
 //  Корзина
 events.on('basket:open', () => {
@@ -115,18 +123,17 @@ events.on('basket:change', () => {
 });
 
 // Управление корзиной
-events.on<{ productId: string; inCart?: boolean }>(
-	'cart:toggle',
-	({ productId, inCart }) => {
-		const product = catalog.getProduct(productId);
-		if (!product) return;
-		if (product.price == null) return;
-		const already = cart.hasProduct(product.id);
-		if (typeof inCart === 'boolean') {
-			if (inCart && !already) cart.addProduct(product);
-			if (!inCart && already) cart.removeProduct(product.id);
+events.on(
+	'cart:toggle',() => {
+		modal.close()
+		const product = catalog.getSelected();
+		const selected = cart.hasProduct(product.id)
+		// if (product.price == null) return;
+
+		if(selected) {
+			cart.removeProduct(product.id)
 		} else {
-			already ? cart.removeProduct(product.id) : cart.addProduct(product);
+			cart.addProduct(product)
 		}
 	}
 );
@@ -214,7 +221,6 @@ events.on('order:success:close', () => {
 	try {
 		const products = await api.loadProducts();
 		catalog.setProducts(products);
-		events.emit('basket:change');
 	} catch (e) {
 		console.error('Init error: failed to load products', e);
 	}
