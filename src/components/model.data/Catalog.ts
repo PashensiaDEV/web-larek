@@ -27,7 +27,6 @@ export class Catalog {
 		const exists = this.products.some((product) => product.id === id);
 		if (exists) {
 			this.selectedProductId = id;
-			console.log(id)
 			this.events.emit('card:choosen')
 		} else {
 			throw new Error(`Product with id "${id}" not found`);
@@ -39,7 +38,6 @@ export class Catalog {
 		if (this.selectedProductId === null) {
 			return null;
 		} else {
-		  console.log(this.selectedProductId )
 			return this.getProduct(this.selectedProductId);
 			
 		}

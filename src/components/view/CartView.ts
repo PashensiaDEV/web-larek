@@ -29,14 +29,10 @@ export class CartView extends Component<IBasketView> {
 			this.root
 		);
 
-		this.emptyEl = this.root.querySelector('.modal__text') as HTMLElement;
-		if (!this.emptyEl) {
-			this.emptyEl = createElement<HTMLSpanElement>('span', {
-				className: 'modal__text',
-			});
+		// this.emptyEl = this.root.querySelector('.modal__text') as HTMLElement;
 
-			this.listEl.before(this.emptyEl);
-		}
+		
+		
 		this.setEmptyState(true);
 
 		this.orderBtn.addEventListener('click', () =>
@@ -62,6 +58,23 @@ export class CartView extends Component<IBasketView> {
 	}
 
 	setEmptyState(isEmpty: boolean, text: string = 'Корзина пуста'): void {
-		this.emptyEl.textContent = isEmpty ? text : '';
+
+		if (isEmpty) {
+			this.emptyEl = createElement<HTMLSpanElement>('span', {
+				className: 'modal__text',
+			});
+			this.listEl.before(this.emptyEl);
+			this.emptyEl.textContent = isEmpty ? text : '';
+		} else {
+			this.emptyEl.remove();
+		}
+
+
+		// this.emptyEl = createElement<HTMLSpanElement>('span', {
+		// 		className: 'modal__text',
+		// 	});
+
+		// 	this.listEl.before(this.emptyEl);
+		// this.emptyEl.textContent = isEmpty ? text : '';
 	}
 }

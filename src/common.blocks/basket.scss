@@ -27,6 +27,12 @@
       background-color: $primary;
       color: white;
       margin-right: 1rem;
+
+      @media (max-width: 500px) {
+      height: 30px;
+      width: 30px;
+      min-width: 30px;
+    }
     }
 
     &-delete {
@@ -34,6 +40,10 @@
       @include mixins.link($hover, white);
       opacity: 0.5;
       margin-left: 4rem;
+
+      @media (max-width: 500px) {
+      margin-left: 0;
+    }
     }
   }
 }

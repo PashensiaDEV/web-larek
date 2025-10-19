@@ -30,6 +30,10 @@
     box-sizing: border-box;
     position: relative;
 
+    @media (max-width: 500px) {
+      padding: 2.4rem 1rem;
+    }
+
      &:has(.basket) {
       margin: 200px 0 auto 0;
      }

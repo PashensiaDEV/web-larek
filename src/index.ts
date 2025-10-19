@@ -21,6 +21,7 @@ import { GalleryProductCardView } from './components/view/GalleryProductCardView
 import { ProductModalView } from './components/view/ProductModalView';
 import { ContactsFormView } from './components/view/ContactsFormView';
 import { SuccessView } from './components/view/SuccessView';
+import { OrderFormView } from './components/view/OrderFormView';
 
 // Утилиты/константы/типы
 import { cloneTemplate, ensureElement } from './utils/utils';
@@ -31,7 +32,6 @@ import {
 	IProduct,
 	PaymentMethod,
 } from './types';
-import { OrderFormView } from './components/view/OrderPageView';
 
 // Шаблоны
 const cardTpl = ensureElement<HTMLTemplateElement>('#card-catalog');
